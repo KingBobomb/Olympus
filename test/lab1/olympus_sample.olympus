@@ -1,0 +1,5 @@
+// --- start AI code ---
+// A message from Olympus
+forge power = 100;
+proclaim "Welcome to Olympus";
+// --- end AI code ---
