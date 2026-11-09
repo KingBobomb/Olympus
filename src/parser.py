@@ -1,5 +1,6 @@
 # // --- start AI code ---
 from expr import Binary, Grouping, Literal, Unary
+from stmt import Expression, Print
 from token_type import TokenType
 
 
@@ -11,6 +12,7 @@ class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
+        self.errors = []
 
     def peek(self):
         return self.tokens[self.current]
@@ -51,6 +53,17 @@ class Parser:
         raise self.error(self.peek(), message)
     
     def parse(self):
+        statements = []
+
+        while not self.is_at_end():
+            statement = self.declaration()
+
+            if statement is not None:
+                statements.append(statement)
+
+        return statements
+
+    def parse_expression(self):
         expression = self.expression()
 
         if not self.is_at_end():
@@ -59,6 +72,49 @@ class Parser:
             )
 
         return expression
+
+    def declaration(self):
+        try:
+            return self.statement()
+        except ParseError as error:
+            self.errors.append(error)
+            self.synchronize()
+            return None
+
+    def statement(self):
+        if self.match(TokenType.PROCLAIM):
+            return self.print_statement()
+
+        return self.expression_statement()
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after value.")
+        return Print(value)
+
+    def expression_statement(self):
+        expression = self.expression()
+        self.consume(
+            TokenType.SEMICOLON, "Expected ';' after expression."
+        )
+        return Expression(expression)
+
+    def synchronize(self):
+        self.advance()
+
+        while not self.is_at_end():
+            if self.previous().token_type == TokenType.SEMICOLON:
+                return
+
+            if self.peek().token_type in (
+                TokenType.FORGE,
+                TokenType.PROCLAIM,
+                TokenType.FATE,
+                TokenType.CYCLE,
+            ):
+                return
+
+            self.advance()
 
     def expression(self):
         return self.equality()
@@ -122,6 +178,9 @@ class Parser:
 
         if self.match(TokenType.TRUE):
             return Literal(True)
+
+        if self.match(TokenType.VOID):
+            return Literal(None)
 
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)

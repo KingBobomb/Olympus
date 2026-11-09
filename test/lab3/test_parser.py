@@ -31,7 +31,7 @@ for source in sources:
             print(error)
     else:
         try:
-            expression = Parser(tokens).parse()
+            expression = Parser(tokens).parse_expression()
             print(AstPrinter().print(expression))
         except ParseError as error:
             print(error)

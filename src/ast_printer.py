@@ -7,6 +7,8 @@ from expr import Binary, Grouping, Literal, Unary
 class AstPrinter:
     def print(self, expression):
         if isinstance(expression, Literal):
+            if expression.value is None:
+                return "void"
             if isinstance(expression.value, bool):
                 return "true" if expression.value else "false"
             if isinstance(expression.value, str):

@@ -38,5 +38,6 @@ class TokenType(Enum):
     CYCLE = auto()
     TRUE = auto()
     FALSE = auto()
+    VOID = auto()
 
     EOF = auto()

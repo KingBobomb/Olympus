@@ -67,6 +67,7 @@ class Scanner:
             "cycle": TokenType.CYCLE,
             "true": TokenType.TRUE,
             "false": TokenType.FALSE,
+            "void": TokenType.VOID,
         }
 
         text = self.source[self.start:self.current]

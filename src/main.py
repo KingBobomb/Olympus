@@ -1,8 +1,8 @@
 # // --- start AI code ---
 import sys
 from pathlib import Path
-from ast_printer import AstPrinter
-from parser import Parser, ParseError
+from Interpreter import Interpreter
+from parser import Parser
 
 from scanner import Scanner
 
@@ -17,12 +17,10 @@ class Olympus:
                 print(error, file=sys.stderr)
             return False
 
+        parser = Parser(tokens)
+
         try:
-            expression = Parser(tokens).parse()
-            output = AstPrinter().print(expression)
-        except ParseError as error:
-            print(error, file=sys.stderr)
-            return False
+            statements = parser.parse()
         except RecursionError:
             print(
                 "Error: Expression nesting is too deep.",
@@ -30,8 +28,19 @@ class Olympus:
             )
             return False
 
-        print(output)
-        return True
+        if parser.errors:
+            for error in parser.errors:
+                print(error, file=sys.stderr)
+            return False
+
+        try:
+            return Interpreter().interpret(statements)
+        except RecursionError:
+            print(
+                "Error: Expression nesting is too deep.",
+                file=sys.stderr,
+            )
+            return False
 
     def run_file(self, filename):
         try:
@@ -43,7 +52,7 @@ class Olympus:
         return 0 if self.run(source) else 1
     
     def run_prompt(self):
-        print("Olympus scanner. Press Ctrl+D to exit.")
+        print("Olympus interpreter. Press Ctrl+D to exit.")
 
         while True:
             try:
